@@ -1,0 +1,14 @@
+[package]
+authors = ["YUUKIToriyama<github@toriyama.dev>"]
+edition = "2021"
+license = "MIT"
+name = "draw-julia"
+readme = "README.md"
+repository = "https://github.com/YUUKIToriyama/draw-julia"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2.82"
