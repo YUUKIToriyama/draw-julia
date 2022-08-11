@@ -1,31 +1,41 @@
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast};
 
 const RADIUS_OF_CONVERGENCE: f64 = 2.0;
 const LIMIT: u32 = 900;
 
 #[wasm_bindgen]
 pub fn draw_julia(
-    context: &web_sys::CanvasRenderingContext2d,
-    width: u32,
-    height: u32,
+    canvas: &web_sys::HtmlCanvasElement,
     real: f64,
     imaginary: f64,
 ) -> Result<(), wasm_bindgen::JsValue> {
+    let context = canvas
+        .get_context("2d")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+        .unwrap();
+    let canvas_width = canvas.width();
+    let canvas_height = canvas.height();
     let c = num_complex::Complex {
         re: real,
         im: imaginary,
     };
-    let mut data = get_julia_set(width, height, c);
+    let mut data = get_julia_set(canvas_width, canvas_height, c);
     let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
         wasm_bindgen::Clamped(&mut data),
-        width,
-        height,
+        canvas_width,
+        canvas_height,
     )
     .unwrap();
     context.put_image_data(&image_data, 0.0, 0.0)
 }
 
-pub fn get_julia_set(canvas_width: u32, canvas_height: u32, c: num_complex::Complex<f64>) -> Vec<u8> {
+pub fn get_julia_set(
+    canvas_width: u32,
+    canvas_height: u32,
+    c: num_complex::Complex<f64>,
+) -> Vec<u8> {
     let mut data = Vec::new();
 
     let scale = 2.0 * RADIUS_OF_CONVERGENCE / (canvas_width as f64);
