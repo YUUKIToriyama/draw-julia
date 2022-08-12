@@ -88,10 +88,10 @@ impl JuliaSet {
         let bound: Bound = match bound.into_serde() {
             Ok(v) => v,
             Err(_) => Bound {
-                north: 2.0,
-                south: -2.0,
-                west: -2.0,
-                east: 2.0,
+                north: RADIUS_OF_CONVERGENCE,
+                south: -RADIUS_OF_CONVERGENCE,
+                west: -RADIUS_OF_CONVERGENCE,
+                east: RADIUS_OF_CONVERGENCE,
             }, // 省略されている場合、うまく変換できなかった場合は既定値を設定する
         };
 
@@ -113,13 +113,15 @@ impl JuliaSet {
     fn get_julia_set(canvas_width: u32, canvas_height: u32, bound: Bound, c: Complex) -> Vec<u8> {
         let mut data = Vec::new();
 
-        let scale = 2.0 * RADIUS_OF_CONVERGENCE / (canvas_width as f64);
+        let scale_x = (bound.east - bound.west).abs() / (canvas_width as f64);
+        let scale_y = (bound.north - bound.south).abs() / (canvas_height as f64);
 
         for x in 0..canvas_width {
             for y in 0..canvas_height {
+                // 初期値を設定
                 let z0 = Complex {
-                    re: RADIUS_OF_CONVERGENCE - (y as f64) * scale,
-                    im: RADIUS_OF_CONVERGENCE - (x as f64) * scale,
+                    re: bound.west + (x as f64) * scale_x,
+                    im: bound.north - (y as f64) * scale_y,
                 };
                 match Self::calculate_sequence_limit(z0, c) {
                     // 収束する場合は黒(#000000)
