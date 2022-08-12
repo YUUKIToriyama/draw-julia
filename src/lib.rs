@@ -120,8 +120,8 @@ impl JuliaSet {
             for y in 0..canvas_height {
                 // 初期値を設定
                 let z0 = Complex {
-                    re: bound.west + (x as f64) * scale_x,
-                    im: bound.north - (y as f64) * scale_y,
+                    re: bound.south + (y as f64) * scale_y,
+                    im: bound.west + (x as f64) * scale_x,
                 };
                 match Self::calculate_sequence_limit(z0, c) {
                     // 収束する場合は黒(#000000)
