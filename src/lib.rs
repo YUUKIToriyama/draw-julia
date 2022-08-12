@@ -60,7 +60,7 @@ enum SequenceLimit {
 
 #[wasm_bindgen]
 pub struct JuliaSet {
-     c: Complex,
+    c: Complex,
 }
 
 #[wasm_bindgen]
@@ -85,7 +85,15 @@ impl JuliaSet {
         let canvas_height = canvas.height();
 
         // 描画する範囲を表す変数
-        let bound: Bound = bound.into_serde().unwrap();
+        let bound: Bound = match bound.into_serde() {
+            Ok(v) => v,
+            Err(_) => Bound {
+                north: 2.0,
+                south: -2.0,
+                west: -2.0,
+                east: 2.0,
+            }, // 省略されている場合、うまく変換できなかった場合は既定値を設定する
+        };
 
         // 漸化式を計算して画像を生成する
         let mut data = Self::get_julia_set(canvas_width, canvas_height, bound, self.c);
