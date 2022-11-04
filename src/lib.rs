@@ -111,7 +111,8 @@ impl JuliaSet {
 
     /// ジュリア集合の画像データを生成する
     fn get_julia_set(canvas_width: u32, canvas_height: u32, bound: Bound, c: Complex) -> Vec<u8> {
-        let mut data = Vec::new();
+        let data_size = canvas_height * canvas_width * 4;
+        let mut data: Vec<u8> = vec![0; data_size as usize];
 
         let scale_x = (bound.east - bound.west).abs() / (canvas_width as f64);
         let scale_y = (bound.north - bound.south).abs() / (canvas_height as f64);
@@ -123,20 +124,21 @@ impl JuliaSet {
                     re: bound.west + (x as f64) * scale_x,
                     im: bound.south + (y as f64) * scale_y,
                 };
+                let i = (y * canvas_width + x) as usize;
                 match Self::calculate_sequence_limit(z0, c) {
                     // 収束する場合は黒(#000000)
                     SequenceLimit::Convergence => {
-                        data.push(0); // R
-                        data.push(0); // G
-                        data.push(0); // B
-                        data.push(255); // A
+                        data[4 * i] = 0; // R
+                        data[4 * i + 1] = 0; // G
+                        data[4 * i + 2] = 0; // B
+                        data[4 * i + 3] = 0; // A
                     }
                     // 発散する場合は適当な色に着色する
                     SequenceLimit::Divergence(count) => {
-                        data.push((255 - count / 2) as u8); // R
-                        data.push((255 - count / 4) as u8); // G
-                        data.push((255 - count / 6) as u8); // B
-                        data.push(255); // A
+                        data[4 * i] = (255 - count / 2) as u8; // R
+                        data[4 * i + 1] = (255 - count / 4) as u8; // G
+                        data[4 * i + 2] = (255 - count / 6) as u8; // B
+                        data[4 * i + 3] = 255; // A
                     }
                 }
             }
