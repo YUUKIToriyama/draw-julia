@@ -1,4 +1,5 @@
-use std::ops::Add;
+mod complex;
+
 use std::sync::{Arc, Mutex};
 #[cfg(not(target_arch = "wasm32"))]
 use std::thread;
@@ -8,6 +9,8 @@ use wasm_thread as thread;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
+
+use complex::Complex;
 
 const RADIUS_OF_CONVERGENCE: f64 = 2.0;
 const LIMIT: u32 = 900;
@@ -24,38 +27,6 @@ struct Bound {
 struct Constant {
     real: f64,
     imaginary: f64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy)]
-struct Complex {
-    re: f64,
-    im: f64,
-}
-
-impl Complex {
-    fn square(self) -> Complex {
-        let real = (self.re * self.re) - (self.im * self.im);
-        let imaginary = 2.0 * self.re * self.im;
-        Complex {
-            re: real,
-            im: imaginary,
-        }
-    }
-
-    fn norm(&self) -> f64 {
-        (self.re * self.re) + (self.im * self.im)
-    }
-}
-
-impl Add<Complex> for Complex {
-    type Output = Complex;
-
-    fn add(self, z: Complex) -> Complex {
-        Complex {
-            re: self.re + z.re,
-            im: self.im + z.im,
-        }
-    }
 }
 
 enum SequenceLimit {
