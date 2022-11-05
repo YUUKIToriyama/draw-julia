@@ -7,7 +7,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
 
 use complex::Complex;
-use julia::get_julia_set;
+use julia::get_julia_set_single_thread;
 use util::{Bound, RADIUS_OF_CONVERGENCE};
 
 #[derive(Serialize, Deserialize)]
@@ -54,7 +54,7 @@ impl JuliaSet {
         };
 
         // 漸化式を計算して画像を生成する
-        let mut data = get_julia_set(canvas_width, canvas_height, bound, self.c);
+        let mut data = get_julia_set_single_thread(canvas_width, canvas_height, bound, self.c);
 
         // ImageDataを作成する
         let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
