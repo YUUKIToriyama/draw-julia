@@ -1,6 +1,6 @@
-mod complex;
-mod julia;
-mod util;
+pub mod complex;
+pub mod julia;
+pub mod util;
 
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
