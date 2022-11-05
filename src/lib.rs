@@ -24,7 +24,7 @@ pub struct JuliaSet {
 #[wasm_bindgen]
 impl JuliaSet {
     pub fn new(c: JsValue) -> JuliaSet {
-        let constant: Complex = c.into_serde().unwrap();
+        let constant: Complex = serde_wasm_bindgen::from_value(c).unwrap();
         JuliaSet { c: constant }
     }
 
@@ -43,7 +43,7 @@ impl JuliaSet {
         let canvas_height = canvas.height();
 
         // 描画する範囲を表す変数
-        let bound: Bound = match bound.into_serde() {
+        let bound: Bound = match serde_wasm_bindgen::from_value(bound) {
             Ok(v) => v,
             Err(_) => Bound {
                 north: RADIUS_OF_CONVERGENCE,
