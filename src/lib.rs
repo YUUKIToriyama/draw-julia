@@ -1,37 +1,19 @@
 mod complex;
-
-use std::sync::{Arc, Mutex};
-#[cfg(not(target_arch = "wasm32"))]
-use std::thread;
-#[cfg(target_arch = "wasm32")]
-use wasm_thread as thread;
+mod julia;
+mod util;
 
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
 
 use complex::Complex;
-
-const RADIUS_OF_CONVERGENCE: f64 = 2.0;
-const LIMIT: u32 = 900;
-
-#[derive(Serialize, Deserialize)]
-struct Bound {
-    north: f64,
-    south: f64,
-    west: f64,
-    east: f64,
-}
+use julia::get_julia_set;
+use util::{Bound, RADIUS_OF_CONVERGENCE};
 
 #[derive(Serialize, Deserialize)]
 struct Constant {
     real: f64,
     imaginary: f64,
-}
-
-enum SequenceLimit {
-    Convergence,     // 収束
-    Divergence(u32), // 発散
 }
 
 #[wasm_bindgen]
@@ -72,7 +54,7 @@ impl JuliaSet {
         };
 
         // 漸化式を計算して画像を生成する
-        let mut data = Self::get_julia_set(canvas_width, canvas_height, bound, self.c);
+        let mut data = get_julia_set(canvas_width, canvas_height, bound, self.c);
 
         // ImageDataを作成する
         let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
@@ -83,75 +65,5 @@ impl JuliaSet {
         .unwrap();
         // <canvas>要素に画像を書き込む
         context.put_image_data(&image_data, 0.0, 0.0)
-    }
-
-    /// ジュリア集合の画像データを生成する
-    fn get_julia_set(canvas_width: u32, canvas_height: u32, bound: Bound, c: Complex) -> Vec<u8> {
-        let data_size = canvas_height * canvas_width * 4;
-        let data = Arc::new(Mutex::new(vec![0; data_size as usize]));
-
-        let scale_x = (bound.east - bound.west).abs() / (canvas_width as f64);
-        let scale_y = (bound.north - bound.south).abs() / (canvas_height as f64);
-
-        let mut handles = vec![];
-
-        for y in 0..canvas_height {
-            for x in 0..canvas_width {
-                let data = Arc::clone(&data);
-                let handle = thread::spawn(move || {
-                    // 初期値を設定
-                    let z0 = Complex {
-                        re: bound.west + (x as f64) * scale_x,
-                        im: bound.south + (y as f64) * scale_y,
-                    };
-                    // 収束・発散を計算
-                    let result = Self::calculate_sequence_limit(z0, c);
-                    // 画像データに書き込む
-                    let mut data = data.lock().unwrap();
-                    let i = (y * canvas_width + x) as usize;
-                    match result {
-                        // 収束する場合は黒(#000000)
-                        SequenceLimit::Convergence => {
-                            (*data)[4 * i] = 0; // R
-                            (*data)[4 * i + 1] = 0; // G
-                            (*data)[4 * i + 2] = 0; // B
-                            (*data)[4 * i + 3] = 0; // A
-                        }
-                        // 発散する場合は適当な色に着色する
-                        SequenceLimit::Divergence(count) => {
-                            (*data)[4 * i] = (255 - count / 2) as u8; // R
-                            (*data)[4 * i + 1] = (255 - count / 4) as u8; // G
-                            (*data)[4 * i + 2] = (255 - count / 6) as u8; // B
-                            (*data)[4 * i + 3] = 255; // A
-                        }
-                    }
-                });
-                handles.push(handle);
-            }
-        }
-        for handle in handles {
-            handle.join().unwrap();
-        }
-        return Arc::try_unwrap(data).unwrap().lock().unwrap().to_vec();
-    }
-
-    /// 与えられた初期値に対して数列が収束するか発散するかを計算する
-    fn calculate_sequence_limit(z0: Complex, c: Complex) -> SequenceLimit {
-        let mut result: SequenceLimit = SequenceLimit::Convergence;
-        let mut n: u32 = 0;
-        let mut z: Complex = z0;
-        // n -> LIMITの極限をとる
-        while n < LIMIT {
-            // 収束半径を超えた場合
-            if z.norm() > RADIUS_OF_CONVERGENCE * RADIUS_OF_CONVERGENCE {
-                result = SequenceLimit::Divergence(n);
-                break;
-            }
-            // 漸化式を計算
-            z = z.square() + c;
-            // ステップ数を更新
-            n = n + 1;
-        }
-        return result;
     }
 }
