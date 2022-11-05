@@ -42,9 +42,8 @@ pub fn get_julia_set(canvas_width: u32, canvas_height: u32, bound: Bound, c: Com
     let scale_x = (bound.east - bound.west).abs() / (canvas_width as f64);
     let scale_y = (bound.north - bound.south).abs() / (canvas_height as f64);
 
-    let mut handles = vec![];
-
     for y in 0..canvas_height {
+        let mut handles = vec![];
         for x in 0..canvas_width {
             let data = Arc::clone(&data);
             let handle = thread::spawn(move || {
@@ -56,30 +55,30 @@ pub fn get_julia_set(canvas_width: u32, canvas_height: u32, bound: Bound, c: Com
                 // 収束・発散を計算
                 let result = calculate_sequence_limit(z0, c);
                 // 画像データに書き込む
-                let mut data = data.lock().unwrap();
+                let mut data = data.lock().expect(&format!("{},{}", x, y));
                 let i = (y * canvas_width + x) as usize;
                 match result {
                     // 収束する場合は黒(#000000)
                     SequenceLimit::Convergence => {
-                        (*data)[4 * i] = 0; // R
-                        (*data)[4 * i + 1] = 0; // G
-                        (*data)[4 * i + 2] = 0; // B
-                        (*data)[4 * i + 3] = 0; // A
+                        data[4 * i] = 0; // R
+                        data[4 * i + 1] = 0; // G
+                        data[4 * i + 2] = 0; // B
+                        data[4 * i + 3] = 0; // A
                     }
                     // 発散する場合は適当な色に着色する
                     SequenceLimit::Divergence(count) => {
-                        (*data)[4 * i] = (255 - count / 2) as u8; // R
-                        (*data)[4 * i + 1] = (255 - count / 4) as u8; // G
-                        (*data)[4 * i + 2] = (255 - count / 6) as u8; // B
-                        (*data)[4 * i + 3] = 255; // A
+                        data[4 * i] = (255 - count / 2) as u8; // R
+                        data[4 * i + 1] = (255 - count / 4) as u8; // G
+                        data[4 * i + 2] = (255 - count / 6) as u8; // B
+                        data[4 * i + 3] = 255; // A
                     }
                 }
             });
             handles.push(handle);
         }
-    }
-    for handle in handles {
-        handle.join().unwrap();
+        for handle in handles {
+            handle.join().unwrap();
+        }
     }
     return Arc::try_unwrap(data).unwrap().lock().unwrap().to_vec();
 }
