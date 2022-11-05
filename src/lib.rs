@@ -1,6 +1,9 @@
 use std::ops::Add;
 use std::sync::{Arc, Mutex};
+#[cfg(not(target_arch = "wasm32"))]
 use std::thread;
+#[cfg(target_arch = "wasm32")]
+use wasm_thread as thread;
 
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::wasm_bindgen;
