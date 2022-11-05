@@ -22,5 +22,7 @@ image = "0.24.4"
 js-sys = "0.3.59"
 serde = {version = "1.0.143", features = ["derive"]}
 wasm-bindgen = {version = "0.2.82", features = ["serde-serialize"]}
-wasm_thread = { version = "0.2.0", features = ["es_modules"] }
-web-sys = {version = "0.3.59", features = ["CanvasRenderingContext2d", "ImageData", "HtmlCanvasElement"]}
+
+[dependencies.web-sys]
+version = "0.3.59"
+features = ["CanvasRenderingContext2d", "ImageData", "HtmlCanvasElement"]
