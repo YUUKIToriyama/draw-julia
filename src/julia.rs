@@ -63,13 +63,14 @@ pub fn get_julia_set_single_thread(
                     data[4 * i] = 0; // R
                     data[4 * i + 1] = 0; // G
                     data[4 * i + 2] = 0; // B
-                    data[4 * i + 3] = 0; // A
+                    data[4 * i + 3] = 255; // A
                 }
                 // 発散する場合は適当な色に着色する
                 SequenceLimit::Divergence(count) => {
-                    data[4 * i] = (255 - count / 2) as u8; // R
-                    data[4 * i + 1] = (255 - count / 4) as u8; // G
-                    data[4 * i + 2] = (255 - count / 6) as u8; // B
+                    let speed_of_divergence = (count as f32) / (LIMIT as f32);
+                    data[4 * i] = (255.0 - 110.0 * speed_of_divergence) as u8; // R
+                    data[4 * i + 1] = (255.0 - 30.0 * speed_of_divergence) as u8; // G
+                    data[4 * i + 2] = (255.0 - 140.0 * speed_of_divergence) as u8; // B
                     data[4 * i + 3] = 255; // A
                 }
             }
@@ -113,13 +114,14 @@ pub fn get_julia_set_multi_thread(
                         data[4 * i] = 0; // R
                         data[4 * i + 1] = 0; // G
                         data[4 * i + 2] = 0; // B
-                        data[4 * i + 3] = 0; // A
+                        data[4 * i + 3] = 255; // A
                     }
                     // 発散する場合は適当な色に着色する
                     SequenceLimit::Divergence(count) => {
-                        data[4 * i] = (255 - count / 2) as u8; // R
-                        data[4 * i + 1] = (255 - count / 4) as u8; // G
-                        data[4 * i + 2] = (255 - count / 6) as u8; // B
+                        let speed_of_divergence = (count as f32) / (LIMIT as f32);
+                        data[4 * i] = (255.0 - 110.0 * speed_of_divergence) as u8; // R
+                        data[4 * i + 1] = (255.0 - 30.0 * speed_of_divergence) as u8; // G
+                        data[4 * i + 2] = (255.0 - 140.0 * speed_of_divergence) as u8; // B
                         data[4 * i + 3] = 255; // A
                     }
                 }
