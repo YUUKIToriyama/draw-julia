@@ -18,6 +18,7 @@ name = "draw_julia_cli"
 path = "src/bin.rs"
 
 [dependencies]
+clap = { version = "4.0.19", features = ["derive"] }
 image = "0.24.4"
 js-sys = "0.3.59"
 serde = {version = "1.0.143", features = ["derive"]}
