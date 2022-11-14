@@ -19,9 +19,6 @@ struct Cli {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
-    use image::{ColorType, ImageFormat};
-    use std::path::Path;
-
     use draw_julia::{
         complex::Complex,
         julia::{get_julia_set_multi_thread, get_julia_set_single_thread},
@@ -44,13 +41,17 @@ fn main() {
         true => get_julia_set_multi_thread(args.width, args.height, bound, c),
         false => get_julia_set_single_thread(args.width, args.height, bound, c),
     };
-    image::save_buffer_with_format(
-        Path::new(&args.file_name),
-        &image_buffer,
-        args.width,
-        args.height,
-        ColorType::Rgba8,
-        ImageFormat::Png,
-    )
-    .unwrap();
+    save_buffer_as_png(&args.file_name, args.width, args.height, &image_buffer);
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn save_buffer_as_png(file_name: &str, width: u32, height: u32, buffer: &Vec<u8>) {
+    use std::{fs::File, io::BufWriter, path::Path};
+    let path = Path::new(file_name);
+    let file = File::create(path).unwrap();
+    let mut encoder = png::Encoder::new(BufWriter::new(file), width, height);
+    encoder.set_color(png::ColorType::Rgba);
+    encoder.set_depth(png::BitDepth::Eight);
+    let mut writer = encoder.write_header().unwrap();
+    writer.write_image_data(buffer).unwrap();
 }
